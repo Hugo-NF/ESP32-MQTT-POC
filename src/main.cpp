@@ -1,36 +1,38 @@
+#include "../include/AzureIotHubClient.h"
 #include "../include/env.h"
 #include "../include/OTAUpdate.h"
-#include "../include/Wifi.h"
 
 #include <Arduino.h>
+#include <ArduinoJson.h>
 
-//variabls for blinking an LED with Millis
-const int led = LED_BUILTIN; // ESP32 Pin to which onboard LED is connected
-unsigned long previousMillis = 0;  // will store last time LED was updated
-const long interval = 10000;  // interval at which to blink (milliseconds)
-int ledState = LOW;  // ledState used to set the LED
+AzureIotHubClient hub;
+uint32_t pin = 32;
+char message_content[255];
+
+void IRAM_ATTR pinInterrupt(void *arg) {
+
+    uint32_t* pin_num = (uint32_t*) arg;
+    sniprintf(message_content, 255, "Salve caraio");
+    hub.sendMessageToHub(message_content);
+    Serial.println("Interrupção");
+}
 
 void setup() {
+    Serial.begin(9600);
 
-    pinMode(led, OUTPUT);
-    
     if(Wifi::connect(WIFI_SSID, WIFI_PASS) != WL_CONNECTED)
         ESP.restart();
+
+    if(hub.openIotHubConnection(DEVICE_CONNECTION_STRING))
+        Serial.println("Conectado");
+
+    pinMode(GPIO_NUM_19, INPUT);
+    attachInterruptArg(GPIO_NUM_19, pinInterrupt, &pin, RISING);
 
     OTAUpdate::setup();
 }
 
 void loop() {
+    
     OTAUpdate::listen();
-  
-    //loop to blink without delay
-    unsigned long currentMillis = millis();
-    if (currentMillis - previousMillis >= interval) {
-        // save the last time you blinked the LED
-        previousMillis = currentMillis;
-        // if the LED is off turn it on and vice-versa:
-        ledState = not(ledState);
-        // set the LED with the ledState of the variable:
-        digitalWrite(led,  ledState);
-    }
 }
