@@ -1,12 +1,12 @@
-#include "../include/OTAUpdate.h"
+#include "OTAUpdate.h"
 
 
 void OTAUpdate::setup() {
-    // Port defaults to 3232
-    // ArduinoOTA.setPort(3232);
+    // Port defaults to 32320
+    ArduinoOTA.setPort(3232);
 
     // Hostname defaults to esp3232-[MAC]
-    // ArduinoOTA.setHostname("myesp32");
+    ArduinoOTA.setHostname("ESP32-HomeAlarm");
 
     // No authentication by default
     // ArduinoOTA.setPassword("admin");
