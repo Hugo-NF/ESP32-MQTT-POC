@@ -5,6 +5,7 @@
 #include "AzureIotHubCallbacks.h"
 #include "Connectivity.h"
 #include "env.h"
+#include "JFLAlarm.h"
 #include "OTAUpdate.h"
 
 
@@ -24,11 +25,8 @@ void setup() {
         while(1);
     }
 
-    // Prepare LED on WROVER
-    pinMode(LED_BUILTIN, OUTPUT);
-
-    // Turn off all LEDs on WROVER
-    digitalWrite(LED_BUILTIN, LOW);
+    // Setting up pinout
+    JFLAlarm::defaultSetup();
 
     // Add callbacks
     iotclient.setCallback(AzureIoTCallbackConnectionStatus, AzureIotHubCallbacks::onEvent);
@@ -39,7 +37,11 @@ void setup() {
     iotclient.begin(&iotconfig);
 }
 
-unsigned long lastTick = 0, loopId = 0;
+unsigned long lastTick = 0, messagesSent = 0, eventIndex = 0;
+char message[MSG_SIZE] = {0};
+size_t bytesWritten;
+bool sentSuccessfully = true;
+
 void loop() {
 
     // OTAUpdate::listen();
@@ -49,33 +51,21 @@ void loop() {
     }
 
     unsigned long ms = millis();
-    if (ms - lastTick > 15000) {  // send telemetry every 10 seconds
-        char msg[64] = {0};
-        int pos = 0;
-        bool errorCode = false;
-
+    if (ms - lastTick > 15000) {  // Polling events every 10 seconds
         lastTick = ms;
 
-        // Randomize to simulate temperature
-        long tempVal = random(35, 40);
-
-        // Send telemetry
-        if (tempVal >= 38) {
-            pos = snprintf(msg, sizeof(msg) - 1, R"({"temperature": %.2f, "temperatureAlert": %d})", tempVal*1.0f, (tempVal >= 38));
-            msg[pos] = 0;
-            errorCode = iotclient.sendTelemetry(msg, pos);
-        } else {
-            pos = snprintf(msg, sizeof(msg) - 1, "{\"temperature\": %.2f}", tempVal*1.0f);
-            msg[pos] = 0;
-            errorCode = iotclient.sendTelemetry(msg, pos);
-        }
-
-        if (!errorCode) {
-            LOG_ERROR("Sending message has failed");
-        }
-
-        if (!errorCode) {
-            LOG_ERROR("Sending message has failed with error code %d", errorCode);
+        for(eventIndex = 0; eventIndex < EVENTS_AMOUNT; eventIndex++) {
+            if (JFLAlarm::pendingEvents[eventIndex]) {
+                bytesWritten = serializeJson(JFLAlarm::messages[eventIndex], message, MSG_SIZE);
+                message[bytesWritten] = 0;
+                sentSuccessfully = iotclient.sendTelemetry(message, bytesWritten);
+                JFLAlarm::pendingEvents[eventIndex] = false;
+                if(!sentSuccessfully) {
+                    LOG_ERROR("Sending message \"%s\" has failed", message);
+                    JFLAlarm::pendingEvents[eventIndex] = true;
+                }
+            }
+            
         }
     }
 }
