@@ -1,76 +1,27 @@
 #include <Arduino.h>
-#include "AzureIoTLiteClient.h"
 #include <WiFiClientSecure.h>
+
+
+#include "AzureIotHubCallbacks.h"
+#include "Connectivity.h"
 #include "env.h"
 #include "OTAUpdate.h"
 
-const char* ssidName = WIFI_SSID;      // your network SSID (name of wifi network)
-const char* ssidPass = WIFI_PASS;      // your network password
 
 //Conn String format example: HostName=[BLA_BLA];DeviceId=[BLA_BLA];SharedAccessKey=[BLA_BLA]
 AzureIoTConfig_t iotconfig(DEVICE_CONNECTION_STRING);
 
 WiFiClientSecure wifiClient;
 AzureIoTLiteClient iotclient(wifiClient);
-bool isConnected = false;
-
-static bool connectWiFi() {
-    Serial.printf("Connecting WIFI to SSID: %s\r\n", ssidName);
-
-    WiFi.begin(ssidName, ssidPass);
-
-    // Attempt to connect to Wifi network:
-    while (WiFi.status() != WL_CONNECTED) {
-        Serial.print(".");
-        // wait 1 second for re-trying
-        delay(1000);
-    }
-
-    Serial.printf("Connected to %s\r\n", ssidName);
-    Serial.print("IP: "); Serial.println(WiFi.localIP());
-
-    return true;
-}
-
-void executeCommand(const char *cmdName, char *payload) {
-    if (strcmp(cmdName, "setLED") == 0) {
-        LOG_VERBOSE("Executing setLED -> value: %s", payload);
-        int ledVal = atoi(payload);
-        digitalWrite(LED_BUILTIN, ledVal);
-    }
-}
-
-void onEvent(const AzureIoTCallbacks_e cbType, const AzureIoTCallbackInfo_t *callbackInfo) {
-    // ConnectionStatus
-    if (strcmp(callbackInfo->eventName, "ConnectionStatus") == 0) {
-        LOG_VERBOSE("Is connected ? %s (%d)", callbackInfo->statusCode == AzureIoTConnectionOK ? "YES" : "NO",  callbackInfo->statusCode);
-        isConnected = callbackInfo->statusCode == AzureIoTConnectionOK;
-        return;
-    }
-
-    // payload buffer doesn't have a null ending.
-    // add null ending in another buffer before print
-    AzureIOT::StringBuffer buffer;
-    if (callbackInfo->payloadLength > 0) {
-        buffer.initialize(callbackInfo->payload, callbackInfo->payloadLength);
-    }
-
-    LOG_VERBOSE("[%s] event was received. Payload => %s\n", callbackInfo->eventName, buffer.getLength() ? *buffer : "EMPTY");
-
-    if (strcmp(callbackInfo->eventName, "Command") == 0) {
-        LOG_VERBOSE("Command name was => %s\r\n", callbackInfo->tag);
-        executeCommand(callbackInfo->tag, *buffer);
-    }
-}
 
 void setup() {
-    delay(2000);
     Serial.begin(9600);
-    Serial.println("It begins");
+    Serial.println("Starting program...");
 
-    if (!connectWiFi()) {
-        while(1)
-            ;
+    // OTAUpdate::setup();
+
+    if (!Connectivity::connectWiFi(WIFI_SSID, WIFI_PASS)) {
+        while(1);
     }
 
     // Prepare LED on WROVER
@@ -80,10 +31,10 @@ void setup() {
     digitalWrite(LED_BUILTIN, LOW);
 
     // Add callbacks
-    iotclient.setCallback(AzureIoTCallbackConnectionStatus, onEvent);
-    iotclient.setCallback(AzureIoTCallbackMessageSent, onEvent);
-    iotclient.setCallback(AzureIoTCallbackCommand, onEvent);
-    iotclient.setCallback(AzureIoTCallbackSettingsUpdated, onEvent);
+    iotclient.setCallback(AzureIoTCallbackConnectionStatus, AzureIotHubCallbacks::onEvent);
+    iotclient.setCallback(AzureIoTCallbackMessageSent, AzureIotHubCallbacks::onEvent);
+    iotclient.setCallback(AzureIoTCallbackCommand, AzureIotHubCallbacks::onEvent);
+    iotclient.setCallback(AzureIoTCallbackSettingsUpdated, AzureIotHubCallbacks::onEvent);
 
     iotclient.begin(&iotconfig);
 }
