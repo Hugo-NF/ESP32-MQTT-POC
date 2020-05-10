@@ -56,3 +56,15 @@ void AzureIotHubCallbacks::onEvent(const AzureIoTCallbacks_e cbType, const Azure
         executeCommand(callbackInfo->tag, *buffer);
     }
 }
+
+static void onEvent(const AzureIoTCallbacks_e cbType, const AzureIoTCallbackInfo_t *callbackInfo) {
+        // payload buffer doesn't have a null ending.
+    // add null ending in another buffer before print
+    AzureIOT::StringBuffer buffer;
+    if (callbackInfo->payloadLength > 0) {
+        buffer.initialize(callbackInfo->payload, callbackInfo->payloadLength);
+    }
+
+    LOG_ERROR("An error occurred: %s. Payload => %s\r\n", callbackInfo->eventName, buffer.getLength() ? *buffer : "EMPTY");
+
+}
