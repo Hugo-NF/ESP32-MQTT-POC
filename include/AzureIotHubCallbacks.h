@@ -14,7 +14,7 @@ class AzureIotHubCallbacks {
         static void executeCommand(const char *cmdName, char *payload);
         static void configurePinout(const char* deviceTwinTag, char* deviceTwinPayload);
         static void onEvent(const AzureIoTCallbacks_e cbType, const AzureIoTCallbackInfo_t *callbackInfo);
-        static void onError(const AzureIoTCallbacks_e cbType, const AzureIoTCallbackInfo_t *callbackInfo);
+        // static void onError(const AzureIoTCallbacks_e cbType, const AzureIoTCallbackInfo_t *callbackInfo);
 };
 
 #endif //AZURE_IOT_HUB_CALLBACKS_H

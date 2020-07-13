@@ -33,7 +33,7 @@ void setup() {
     iotclient.setCallback(AzureIoTCallbackMessageSent, AzureIotHubCallbacks::onEvent);
     iotclient.setCallback(AzureIoTCallbackCommand, AzureIotHubCallbacks::onEvent);
     iotclient.setCallback(AzureIoTCallbackSettingsUpdated, AzureIotHubCallbacks::onEvent);
-    iotclient.setCallback(AzureIoTCallbackError, AzureIotHubCallbacks::onError);
+    // iotclient.setCallback(AzureIoTCallbackError, AzureIotHubCallbacks::onError);
 
     iotclient.begin(&iotconfig);
 }
