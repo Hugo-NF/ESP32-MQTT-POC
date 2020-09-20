@@ -1,0 +1,40 @@
+{
+  "version": 8,
+  "properties": {
+    "desired": {
+      "debounce": 500,
+      "pinout": {
+        "SIN": 19,
+        "LIGA": 16,
+        "LED": 25
+      },
+      "$metadata": {
+        "$lastUpdated": "2020-05-10T17:08:28.1889386Z",
+        "$lastUpdatedVersion": 7,
+        "pinout": {
+          "$lastUpdated": "2020-05-10T17:08:28.1889386Z",
+          "$lastUpdatedVersion": 7,
+          "SIN": {
+            "$lastUpdated": "2020-05-10T17:08:28.1889386Z",
+            "$lastUpdatedVersion": 7
+          },
+          "LIGA": {
+            "$lastUpdated": "2020-05-10T17:08:28.1889386Z",
+            "$lastUpdatedVersion": 7
+          },
+          "LED": {
+            "$lastUpdated": "2020-05-10T17:08:28.1889386Z",
+            "$lastUpdatedVersion": 7
+          }
+        }
+      },
+      "$version": 7
+    },
+    "reported": {
+      "$metadata": {
+        "$lastUpdated": "2020-05-05T13:49:18.4666649Z"
+      },
+      "$version": 1
+    }
+  }
+}

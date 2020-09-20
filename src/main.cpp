@@ -52,7 +52,7 @@ void loop() {
     }
 
     unsigned long ms = millis();
-    if (ms - lastTick > 15000) {  // Polling events every 10 seconds
+    if (ms - lastTick > 15000) {  // Polling events every 15 seconds
         lastTick = ms;
 
         for(eventIndex = 0; eventIndex < EVENTS_AMOUNT; eventIndex++) {
